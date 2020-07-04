@@ -14,7 +14,6 @@ import (
 	"github.com/pangbox/pangfiles/crypto/pyxtea"
 	"github.com/pangbox/pangfiles/encoding/litexml"
 	"github.com/pangbox/pangfiles/updatelist"
-	"github.com/pangbox/pangfiles/util"
 )
 
 type cacheentry struct {
@@ -107,7 +106,7 @@ func (s *server) updateList(rw io.Writer) {
 		panic(err)
 	}
 
-	pyxtea.EncipherStream(s.key, util.NullInputPadder{Reader: bytes.NewReader(data)}, rw)
+	pyxtea.EncipherStreamPadNull(s.key, bytes.NewReader(data), rw)
 
 	log.Printf("Updatelist served in %s (cache hits: %d, misses: %d)", time.Since(start), hit, miss)
 }

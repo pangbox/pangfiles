@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/pangbox/pangfiles/crypto/pyxtea"
-	"github.com/pangbox/pangfiles/util"
 )
 
 var (
@@ -71,9 +70,9 @@ func serve(listen, dir string, key pyxtea.Key) {
 
 func crypt(in io.Reader, out io.Writer, key pyxtea.Key, encrypt bool) {
 	if encrypt {
-		pyxtea.EncipherStream(key, util.NullInputPadder{Reader: in}, out)
+		pyxtea.EncipherStreamPadNull(key, in, out)
 	} else {
-		pyxtea.DecipherStream(key, in, out)
+		pyxtea.DecipherStreamTrimNull(key, in, out)
 	}
 }
 

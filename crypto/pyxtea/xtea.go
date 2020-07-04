@@ -3,6 +3,8 @@ package pyxtea
 import (
 	"encoding/binary"
 	"io"
+
+	"github.com/pangbox/pangfiles/util"
 )
 
 // numRounds is the number of rounds used for PangYa's variant of XTEA.
@@ -71,6 +73,12 @@ func EncipherStream(key Key, r io.Reader, w io.Writer) error {
 	}
 }
 
+// EncipherStreamPadNull encrypts a stream of data with XTEA, inserting null
+// bytes to meet XTEA's block alignment requirements.
+func EncipherStreamPadNull(key Key, r io.Reader, w io.Writer) error {
+	return EncipherStream(key, &util.NullInputPadder{Reader: r}, w)
+}
+
 // Encipher encrypts a buffer of data with XTEA.
 func Encipher(key Key, buf []byte) error {
 	for {
@@ -121,5 +129,63 @@ func Decipher(key Key, buf []byte) error {
 			return io.ErrUnexpectedEOF
 		}
 		buf = buf[8:]
+	}
+}
+
+// DecipherStreamTrimNull decrypts a stream of data with XTEA and trims nulls
+// at the end.
+func DecipherStreamTrimNull(key Key, r io.Reader, w io.Writer) error {
+	buf := [8]byte{}
+
+	nullrun := int64(0)
+
+	for {
+		n, err := r.Read(buf[:])
+		if err == io.EOF {
+			if n != 0 {
+				return io.ErrUnexpectedEOF
+			}
+			return nil
+		} else if err != nil {
+			return err
+		} else if n != 8 {
+			return io.ErrUnexpectedEOF
+		}
+
+		DecryptBlock(key, buf[:])
+
+		if nullrun == 0 {
+			// We're not currently on a null run. Check for length of null suffix.
+			for i := 7; i >= 0; i-- {
+				if buf[i] != 0 {
+					break
+				}
+				nullrun++
+			}
+		} else {
+			// We are on a null run; check to see if it continues.
+			if buf[0] == 0 && buf[1] == 0 && buf[2] == 0 && buf[3] == 0 && buf[4] == 0 && buf[5] == 0 && buf[6] == 0 && buf[7] == 0 {
+				// Null run continues, keep buffering.
+				nullrun += 8
+				continue
+			}
+
+			// End of null run; we've hit non-null bytes. Dump null run onto stream.
+			io.CopyN(w, util.NullReader{}, nullrun)
+			if err != nil {
+				return err
+			} else if n != 8 {
+				return io.ErrShortWrite
+			}
+			nullrun = 0
+		}
+
+		// Write all non-null-suffixed bytes.
+		n, err = w.Write(buf[0 : 8-nullrun])
+		if err != nil {
+			return err
+		} else if n != 8 {
+			return io.ErrShortWrite
+		}
 	}
 }
