@@ -10,7 +10,7 @@ import (
 	"github.com/pangbox/pangfiles/hash/pycrc32"
 )
 
-const crcBufLen = 2 << 11
+const crcBufLen = 1 << 12
 
 // FileInfo represents the per-file information in an UpdateList.
 type FileInfo struct {
