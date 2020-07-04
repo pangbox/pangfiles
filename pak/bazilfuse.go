@@ -1,3 +1,5 @@
+// +build freebsd linux
+
 package pak
 
 import (
