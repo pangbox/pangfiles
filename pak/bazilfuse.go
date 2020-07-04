@@ -4,16 +4,43 @@ package pak
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"os"
+	"os/signal"
 	"strings"
 	"syscall"
 
 	"bazil.org/fuse"
-	"bazil.org/fuse/fs"
+	fusefs "bazil.org/fuse/fs"
 )
 
+// Mount mounts a pak filesystem via FUSE.
+func (fs *FS) Mount(mountpoint string) error {
+	c, err := fuse.Mount(
+		mountpoint,
+		fuse.FSName("pakfs"),
+		fuse.Subtype("pakfs"),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer c.Close()
+
+	i := make(chan os.Signal, 1)
+	signal.Notify(i, os.Interrupt)
+	go func() {
+		<-i
+		fmt.Println("Received interrupt, exiting.")
+		fuse.Unmount(mountpoint)
+		os.Exit(0)
+	}()
+
+	return fusefs.Serve(c, fs)
+}
+
 // Root implements FUSE
-func (fs *FS) Root() (fs.Node, error) {
+func (fs *FS) Root() (fusefs.Node, error) {
 	return &fusedir{fs.rootdir, fs}, nil
 }
 
@@ -31,7 +58,7 @@ func (d *fusedir) Attr(ctx context.Context, a *fuse.Attr) error {
 }
 
 // Lookup implements FUSE
-func (d *fusedir) Lookup(ctx context.Context, name string) (fs.Node, error) {
+func (d *fusedir) Lookup(ctx context.Context, name string) (fusefs.Node, error) {
 	path := d.dir.path
 	if path != "" {
 		path += "/"

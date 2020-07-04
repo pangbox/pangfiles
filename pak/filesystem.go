@@ -57,6 +57,18 @@ func NewFS(key pyxtea.Key) *FS {
 	return fs
 }
 
+// LoadPaks loads pak files from a series of patterns or paths.
+func LoadPaks(key pyxtea.Key, patterns []string) (*FS, error) {
+	fs := NewFS(key)
+	for _, pattern := range patterns {
+		err := fs.LoadPaksFromGlob(pattern)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return fs, nil
+}
+
 func (fs *FS) newinode() uint64 {
 	fs.inodes++
 	return fs.inodes

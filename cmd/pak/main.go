@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/pangbox/pangfiles/crypto/pyxtea"
+	"github.com/pangbox/pangfiles/pak"
 )
 
 var (
@@ -42,4 +43,13 @@ func main() {
 	default:
 		log.Fatalln("Please provide a valid command. (valid commands: mount)")
 	}
+}
+
+func mount(patterns []string, mountpoint string) {
+	fs, err := pak.LoadPaks(key, patterns)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Fatal(fs.Mount(mountpoint))
 }
