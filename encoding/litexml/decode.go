@@ -152,8 +152,6 @@ func (d *Decoder) setval(val reflect.Value, push bool, tag string, attr string) 
 				d.cur.doctype = i
 			}
 		}
-	case reflect.Array:
-	case reflect.Slice:
 	}
 }
 
