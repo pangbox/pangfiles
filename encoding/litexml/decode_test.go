@@ -65,7 +65,7 @@ func TestDecodeUpdateList(t *testing.T) {
 <patchVer value="KR.Q4.548.00" />
 <patchNum value="1" />
 <updatelistVer value="20090331" />
-<updatefiles count="3">
+<updatefiles count="3"><!-- basic comment -->
         <fileinfo fname="test01.txt" fdir="" fsize="45" fcrc="-90216330" fdate="2020-06-28" ftime="06:01:35" pname="test01.txt.zip" psize="154" />
         <fileinfo fname="test02.txt" fdir="" fsize="45" fcrc="-109573984" fdate="2020-06-28" ftime="06:01:43" pname="test02.txt.zip" psize="155" />
         <fileinfo fname="test03.txt" fdir="" fsize="45" fcrc="-61144858" fdate="2020-06-28" ftime="06:14:13" pname="test03.txt.zip" psize="158" />

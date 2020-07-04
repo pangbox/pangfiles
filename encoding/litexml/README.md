@@ -52,5 +52,3 @@ For now, the library is using UTF-8 encoding only. The actual game uses EUC-KR. 
 LiteXML structures are very rigid, but the parsing routine is designed to be somewhat lenient. Therefore, the decoding process is highly lossy. Notably, decoding does not support ordering at all. If you have multiple distinct sections of content in a block, it will be impossible to decode. (Worse, right now, it will silently decode very incorrectly.) If you don't care about content or only care about very simple content, this should be OK.
 
 This library significantly lacks testing and safeguards. This is partly by nature due to its limited use, but it would be nice to fix this over time anyways.
-
-XML comments are not supported. This is a minor oversight and not intentional, and should be easy to fix.

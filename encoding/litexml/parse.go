@@ -384,6 +384,24 @@ func (p *parser) expectendtagpart() string {
 	return tag
 }
 
+func (p *parser) expectcommentpart() {
+	// Start of comment
+	p.expect(matchone('-'), "start of comment")
+	p.expect(matchone('-'), "start of comment")
+
+	wnd := [3]rune{p.readrune(), p.readrune(), p.readrune()}
+	for {
+		if wnd[0] == '-' && wnd[1] == '-' && wnd[2] == '>' {
+			return
+		}
+
+		// Slide window.
+		wnd[0] = wnd[1]
+		wnd[1] = wnd[2]
+		wnd[2] = p.readrune()
+	}
+}
+
 type xmlreader interface {
 	doctype(dt DocumentInfo)
 	opentag(tag string)
@@ -404,6 +422,8 @@ func (p *parser) parsenext(reader xmlreader) (err error) {
 	switch {
 	case p.accept(matchone('<'), nil):
 		switch {
+		case p.accept(matchone('!'), nil):
+			p.expectcommentpart()
 		case p.accept(matchone('/'), nil):
 			reader.closetag(p.expectendtagpart())
 		case p.accept(matchone('?'), nil):
