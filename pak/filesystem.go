@@ -1,12 +1,18 @@
 package pak
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/pangbox/pangfiles/crypto/pyxtea"
+)
+
+var (
+	// ErrFuseUnsupported is returned by Mount when Fuse is not supported.
+	ErrFuseUnsupported = errors.New("fuse mounting not supported in build")
 )
 
 type fsfile struct {

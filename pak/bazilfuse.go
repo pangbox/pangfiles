@@ -1,3 +1,4 @@
+// +build !nofuse
 // +build freebsd linux
 
 package pak
@@ -13,6 +14,13 @@ import (
 
 	"bazil.org/fuse"
 	fusefs "bazil.org/fuse/fs"
+)
+
+// Implementation of pak fuse used on Linux and FreeBSD, no CGO required.
+
+const (
+	// FuseImplementation describes the fuse implementation in use in this build.
+	FuseImplementation = "bazilfuse"
 )
 
 // Mount mounts a pak filesystem via FUSE.
