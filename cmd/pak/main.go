@@ -48,11 +48,15 @@ func main() {
 		os.MkdirAll(*dir, 0o775)
 		mount(flag.Args()[1:flag.NArg()], *dir)
 	case "extract":
+		if flag.NArg() < 2 {
+			log.Fatalln("Command extract requires a glob or list of pak files.")
+		}
 		if *dir == "" {
 			log.Fatalln("-dir not specified (specify -dir $PWD if you really want to extract into current directory)")
 		}
+		extract(flag.Args()[1:flag.NArg()], *dir)
 	default:
-		log.Fatalln("Please provide a valid command. (valid commands: mount)")
+		log.Fatalln("Please provide a valid command. (valid commands: mount, extract)")
 	}
 }
 
@@ -63,4 +67,16 @@ func mount(patterns []string, mountpoint string) {
 	}
 
 	log.Fatal(fs.Mount(mountpoint))
+}
+
+func extract(patterns []string, dest string) {
+	fs, err := pak.LoadPaks(key, patterns)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = fs.Extract(dest)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

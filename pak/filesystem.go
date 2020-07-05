@@ -2,6 +2,7 @@ package pak
 
 import (
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -188,4 +189,56 @@ func (fs *FS) LoadPaksFromGlob(pattern string) error {
 	}
 	sort.Strings(paths)
 	return fs.LoadPaksFromFiles(paths)
+}
+
+// NumFiles returns the number of files in the filesystem.
+func (fs *FS) NumFiles() int {
+	return len(fs.filetbl)
+}
+
+// ReadFileByIndex returns the path and data for a given file index.
+func (fs *FS) ReadFileByIndex(index int) (string, []byte, error) {
+	if index < 0 || index >= len(fs.filetbl) {
+		return "", nil, errors.New("invalid index")
+	}
+
+	data, err := fs.filetbl[index].reader.ReadFile(fs.filetbl[index].entry)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return fs.filetbl[index].path, data, nil
+}
+
+// NumDirectories returns the number of directories in the filesystem.
+func (fs *FS) NumDirectories() int {
+	return len(fs.dirtbl)
+}
+
+// Directory returns the directory at a given index.
+func (fs *FS) Directory(index int) string {
+	if index < 0 || index >= len(fs.dirtbl) {
+		return ""
+	}
+	return fs.dirtbl[index].path
+}
+
+// Extract extracts the filesystem onto the host disk.
+func (fs *FS) Extract(dest string) error {
+	for _, dir := range fs.dirtbl {
+		if err := os.MkdirAll(filepath.Join(dest, dir.path), 0755); err != nil {
+			return err
+		}
+	}
+	for _, file := range fs.filetbl {
+		data, err := file.reader.ReadFile(file.entry)
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(dest, file.path), data, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
