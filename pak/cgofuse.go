@@ -4,6 +4,7 @@
 package pak
 
 import (
+	"errors"
 	"log"
 	"strings"
 
@@ -21,7 +22,9 @@ const (
 func (fs *FS) Mount(mountpoint string) error {
 	fusefs := &cfsfuse{fs: fs}
 	host := fuse.NewFileSystemHost(fusefs)
-	host.Mount(mountpoint, nil)
+	if !host.Mount(mountpoint, nil) {
+		return errors.New("failed to mount filesystem")
+	}
 	return nil
 }
 
@@ -42,6 +45,13 @@ type cfusefd struct {
 }
 
 func (f *cfsfuse) lookup(path string) (*cfusefile, int) {
+	if len(path) > 0 && path[0] == '/' {
+		path = path[1:]
+	}
+	log.Println("lookup", path)
+	if path == "" {
+		return &cfusefile{dir: f.fs.rootdir, fs: f}, 0
+	}
 	if i := searchdirs(f.fs.dirtbl, path); i < len(f.fs.dirtbl) && f.fs.dirtbl[i].path == path {
 		return &cfusefile{dir: f.fs.dirtbl[i], fs: f}, 0
 	}
@@ -52,7 +62,8 @@ func (f *cfsfuse) lookup(path string) (*cfusefile, int) {
 }
 
 func (f *cfsfuse) getfattr(d *fsfile, stat *fuse.Stat_t) {
-	stat.Mode = fuse.S_IFREG | 0444
+	stat.Ino = d.inode
+	stat.Mode = fuse.S_IFREG | 0o444
 	size, err := d.size()
 	if err != nil {
 		log.Printf("Error getting filesize for %q: %s", d.path, err)
@@ -61,10 +72,12 @@ func (f *cfsfuse) getfattr(d *fsfile, stat *fuse.Stat_t) {
 }
 
 func (f *cfsfuse) getdattr(d *fsdir, stat *fuse.Stat_t) {
-	stat.Mode = fuse.S_IFDIR | 0555
+	stat.Ino = d.inode
+	stat.Mode = fuse.S_IFDIR | 0o555
 }
 
 func (f *cfsfuse) Open(path string, flags int) (errc int, fh uint64) {
+	log.Println("Open", path)
 	d, errc := f.lookup(path)
 	if errc != 0 || d.file == nil {
 		return errc, ^uint64(0)
@@ -81,8 +94,10 @@ func (f *cfsfuse) Open(path string, flags int) (errc int, fh uint64) {
 }
 
 func (f *cfsfuse) Getattr(path string, stat *fuse.Stat_t, fh uint64) (errc int) {
+	log.Println("Getattr", path)
 	d, errc := f.lookup(path)
-	if errc != 0 || d.file == nil {
+	if errc != 0 {
+		log.Println("Getattr", path, "=> not found")
 		return errc
 	}
 
@@ -94,10 +109,12 @@ func (f *cfsfuse) Getattr(path string, stat *fuse.Stat_t, fh uint64) (errc int) 
 	default:
 		return -fuse.ENOENT
 	}
+	log.Println("Getattr", path, "=>", stat.Mode)
 	return 0
 }
 
 func (f *cfsfuse) Read(path string, buff []byte, offset int64, fh uint64) (n int) {
+	log.Println("Read", path)
 	if int(fh) > len(f.fd) || fh < 0 {
 		return 0
 	}
@@ -114,9 +131,13 @@ func (f *cfsfuse) Read(path string, buff []byte, offset int64, fh uint64) (n int
 }
 
 func (f *cfsfuse) Readdir(path string, fill func(name string, stat *fuse.Stat_t, ofst int64) bool, offset int64, fh uint64) (errc int) {
+	log.Println("Readdir", path)
 	fill(".", nil, 0)
 	fill("..", nil, 0)
 	prefix := path
+	if len(prefix) > 0 && prefix[0] == '/' {
+		prefix = prefix[1:]
+	}
 	if prefix != "" {
 		prefix += "/"
 	}

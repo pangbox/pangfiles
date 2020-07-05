@@ -39,7 +39,7 @@ func init() {
 func main() {
 	switch flag.Arg(0) {
 	case "mount":
-		if flag.NArg() < 3 {
+		if flag.NArg() < 2 {
 			log.Fatalln("Command serve requires a glob or list of pak files.")
 		}
 		if *dir == "" {
