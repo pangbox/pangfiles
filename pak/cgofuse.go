@@ -48,7 +48,6 @@ func (f *cfsfuse) lookup(path string) (*cfusefile, int) {
 	if len(path) > 0 && path[0] == '/' {
 		path = path[1:]
 	}
-	log.Println("lookup", path)
 	if path == "" {
 		return &cfusefile{dir: f.fs.rootdir, fs: f}, 0
 	}
@@ -77,7 +76,6 @@ func (f *cfsfuse) getdattr(d *fsdir, stat *fuse.Stat_t) {
 }
 
 func (f *cfsfuse) Open(path string, flags int) (errc int, fh uint64) {
-	log.Println("Open", path)
 	d, errc := f.lookup(path)
 	if errc != 0 || d.file == nil {
 		return errc, ^uint64(0)
@@ -94,7 +92,6 @@ func (f *cfsfuse) Open(path string, flags int) (errc int, fh uint64) {
 }
 
 func (f *cfsfuse) Getattr(path string, stat *fuse.Stat_t, fh uint64) (errc int) {
-	log.Println("Getattr", path)
 	d, errc := f.lookup(path)
 	if errc != 0 {
 		log.Println("Getattr", path, "=> not found")
@@ -109,12 +106,10 @@ func (f *cfsfuse) Getattr(path string, stat *fuse.Stat_t, fh uint64) (errc int) 
 	default:
 		return -fuse.ENOENT
 	}
-	log.Println("Getattr", path, "=>", stat.Mode)
 	return 0
 }
 
 func (f *cfsfuse) Read(path string, buff []byte, offset int64, fh uint64) (n int) {
-	log.Println("Read", path)
 	if int(fh) > len(f.fd) || fh < 0 {
 		return 0
 	}
@@ -123,7 +118,7 @@ func (f *cfsfuse) Read(path string, buff []byte, offset int64, fh uint64) (n int
 	if size > len(fd.data)-int(offset) {
 		size = len(fd.data) - int(offset)
 	}
-	if offset <= 0 {
+	if offset < 0 {
 		return 0
 	}
 	n = copy(buff, fd.data[offset:int(offset)+size])
@@ -131,7 +126,6 @@ func (f *cfsfuse) Read(path string, buff []byte, offset int64, fh uint64) (n int
 }
 
 func (f *cfsfuse) Readdir(path string, fill func(name string, stat *fuse.Stat_t, ofst int64) bool, offset int64, fh uint64) (errc int) {
-	log.Println("Readdir", path)
 	fill(".", nil, 0)
 	fill("..", nil, 0)
 	prefix := path
