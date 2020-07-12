@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/pangbox/pangfiles/crypto/pyxtea"
+	"golang.org/x/exp/mmap"
 )
 
 var (
@@ -160,7 +161,7 @@ func (fs *FS) AddPak(reader *Reader) error {
 
 // AddPakFromFile adds a new pak on the filesystem from a path.
 func (fs *FS) AddPakFromFile(path string) error {
-	file, err := os.Open(path)
+	file, err := mmap.Open(path)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,9 @@ import (
 	"io"
 )
 
-var valuePad = []uint16{65313, 33615, 26463, 52, 62007, 33119, 18277, 563}
+var valuePad = []uint16{
+	0xFF21, 0x834F, 0x675F, 0x0034, 0xF237, 0x815F, 0x4765, 0x0233,
+}
 
 func decompress(entry FileEntryData, f io.ReaderAt) ([]byte, error) {
 	var out []byte
@@ -55,8 +57,8 @@ func decompress(entry FileEntryData, f io.ReaderAt) ([]byte, error) {
 				value ^= valuePad[(realseq>>3)&7]
 			}
 
-			off := int(value & 0x0FFF)
-			size := int((value >> 0x0C) + 2)
+			off := int(value & 0xFFF)
+			size := int((value >> 12) + 2)
 			out = append(out, make([]byte, size)...)
 			copy(out[len(out)-size:], out[len(out)-off-size:len(out)-off])
 		} else {
