@@ -20,7 +20,7 @@ const (
 
 // Mount mounts a pak filesystem via FUSE.
 func (fs *FS) Mount(mountpoint string) error {
-	fusefs := &cfsfuse{fs: fs}
+	fusefs := &cfsfuse{fs: fs, cache: makecache()}
 	host := fuse.NewFileSystemHost(fusefs)
 	if !host.Mount(mountpoint, nil) {
 		return errors.New("failed to mount filesystem")
@@ -30,8 +30,9 @@ func (fs *FS) Mount(mountpoint string) error {
 
 type cfsfuse struct {
 	fuse.FileSystemBase
-	fs *FS
-	fd []cfusefd
+	fs    *FS
+	fd    []cfusefd
+	cache cache
 }
 
 type cfusefile struct {
@@ -80,14 +81,17 @@ func (f *cfsfuse) Open(path string, flags int) (errc int, fh uint64) {
 	if errc != 0 || d.file == nil {
 		return errc, ^uint64(0)
 	}
-	data, err := d.file.reader.ReadFile(d.file.entry)
-	if err != nil {
-		log.Printf("Error reading file for %q: %s", path, err)
+	data := f.cache.get(path)
+	if data == nil {
+		var err error
+		data, err = d.file.reader.ReadFile(d.file.entry)
+		if err != nil {
+			log.Printf("Error reading file for %q: %s", path, err)
+		}
+		f.cache.set(path, data)
 	}
 
-	f.fd = append(f.fd, cfusefd{
-		data: data,
-	})
+	f.fd = append(f.fd, cfusefd{data: data})
 	return 0, uint64(len(f.fd) - 1)
 }
 
