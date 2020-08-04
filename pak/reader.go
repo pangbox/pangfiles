@@ -54,6 +54,7 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 	var err error
 	n := 0
 	buf := [256]byte{}
+	tmp := [8]byte{}
 
 	decoder := korean.EUCKR.NewDecoder()
 
@@ -69,8 +70,9 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 		// Handle xtea encryption for the metadata.
 		useXTEA := buf[1] >= 4
 		if useXTEA {
-			tmp := append(buf[2:6], buf[10:14]...)
-			if err := pyxtea.Decipher(r.k, tmp); err != nil {
+			copy(tmp[0:4], buf[2:6])
+			copy(tmp[4:8], buf[10:14])
+			if err := pyxtea.Decipher(r.k, tmp[0:8]); err != nil {
 				return fmt.Errorf("decrypting xtea metadata for file entry %d: %w", i, err)
 			}
 			copy(buf[2:6], tmp[0:4])
@@ -130,5 +132,5 @@ func (r *Reader) ReadFile(entry FileEntryData) ([]byte, error) {
 
 // CalcFileSize calculates the actual filesize of a compressed file.
 func (r *Reader) CalcFileSize(entry FileEntryData) (int64, error) {
-	return fastfilesize(entry, r.r)
+	return int64(entry.RealFileSize), nil
 }
