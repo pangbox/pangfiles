@@ -123,12 +123,12 @@ func DecipherStream(key Key, r io.Reader, w io.Writer) error {
 func Decipher(key Key, buf []byte) error {
 	for {
 		DecryptBlock(key, buf[0:8])
+		buf = buf[8:]
 		if len(buf) == 0 {
 			return nil
 		} else if len(buf) < 8 {
 			return io.ErrUnexpectedEOF
 		}
-		buf = buf[8:]
 	}
 }
 
