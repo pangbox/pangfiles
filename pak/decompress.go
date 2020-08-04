@@ -13,7 +13,7 @@ func decompress(entry FileEntryData, f io.ReaderAt) ([]byte, error) {
 	var out []byte
 
 	if entry.Compression == 0 {
-		out = make([]byte, entry.FileSize)
+		out = make([]byte, entry.PackedFileSize)
 		_, err := f.ReadAt(out, int64(entry.Offset))
 		if err != nil {
 			return nil, err
@@ -27,7 +27,7 @@ func decompress(entry FileEntryData, f io.ReaderAt) ([]byte, error) {
 
 	off := int64(entry.Offset)
 
-	readlen := int64(entry.FileSize)
+	readlen := int64(entry.PackedFileSize)
 	for j := int64(0); j < readlen; {
 		if counter == 0 {
 			_, err := f.ReadAt(buf[0:1], off+j)

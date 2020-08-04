@@ -12,9 +12,9 @@ type TrailerData struct {
 
 // FileEntryData is the data structure of each file entry in a Pak file.
 type FileEntryData struct {
-	PathLength   byte
-	Compression  byte
-	Offset       uint32
-	FileSize     uint32
-	RealFileSize uint32
+	PathLength     byte
+	Compression    byte
+	Offset         uint32
+	PackedFileSize uint32
+	RealFileSize   uint32
 }
