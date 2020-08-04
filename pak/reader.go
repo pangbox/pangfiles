@@ -99,6 +99,7 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 				return fmt.Errorf("reading legacy path for file entry %d: %w", i, err)
 			}
 			foffset += int64(n)
+			entry.RealFileSize ^= 0x71
 			for j := byte(0); j < entry.PathLength; j++ {
 				buf[j] ^= 0x71
 			}
