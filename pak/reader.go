@@ -68,7 +68,7 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 		foffset += int64(n)
 
 		// Handle xtea encryption for the metadata.
-		useXTEA := buf[1] >= 4
+		useXTEA := buf[1]&0xF0 == 0x20
 		if useXTEA {
 			copy(tmp[0:4], buf[2:6])
 			copy(tmp[4:8], buf[10:14])
@@ -84,19 +84,15 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 			return fmt.Errorf("unpacking file entry %d: %w", i, err)
 		}
 
-		// Read and, if needed, decrypt, path.
+		// Default to XOR type for legacy entries.
+		if entry.Type&EntryTypeMask == 0 {
+			entry.Type |= EntryTypeXOR
+		}
+
 		path := []byte{}
-		if useXTEA {
-			entry.Compression ^= 0x20
-			if n, err = r.r.ReadAt(buf[:int(entry.PathLength)], foffset); err != nil {
-				return fmt.Errorf("reading xtea path for file entry %d: %w", i, err)
-			}
-			foffset += int64(n)
-			if err := pyxtea.Decipher(r.k, buf[:int(entry.PathLength)]); err != nil {
-				return fmt.Errorf("decrypting xtea path for file entry %d: %w", i, err)
-			}
-			path = append(path, bytes.Trim(buf[:int(entry.PathLength)], "\xCD\x00")...)
-		} else {
+
+		switch entry.Type & EntryTypeMask {
+		case EntryTypeXOR:
 			if n, err = r.r.ReadAt(buf[:int(entry.PathLength)+1], foffset); err != nil {
 				return fmt.Errorf("reading legacy path for file entry %d: %w", i, err)
 			}
@@ -105,6 +101,23 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 			for j := byte(0); j < entry.PathLength; j++ {
 				buf[j] ^= 0x71
 			}
+			path = append(path, buf[:int(entry.PathLength)]...)
+
+		case EntryTypeXTEA:
+			if n, err = r.r.ReadAt(buf[:int(entry.PathLength)], foffset); err != nil {
+				return fmt.Errorf("reading xtea path for file entry %d: %w", i, err)
+			}
+			foffset += int64(n)
+			if err := pyxtea.Decipher(r.k, buf[:int(entry.PathLength)]); err != nil {
+				return fmt.Errorf("decrypting xtea path for file entry %d: %w", i, err)
+			}
+			path = append(path, bytes.Trim(buf[:int(entry.PathLength)], "\xCD\x00")...)
+
+		case EntryTypeBasic:
+			if n, err = r.r.ReadAt(buf[:int(entry.PathLength)+1], foffset); err != nil {
+				return fmt.Errorf("reading legacy path for file entry %d: %w", i, err)
+			}
+			foffset += int64(n)
 			path = append(path, buf[:int(entry.PathLength)]...)
 		}
 

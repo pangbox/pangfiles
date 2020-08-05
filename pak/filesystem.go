@@ -146,7 +146,7 @@ func (fs *FS) addfile(path string, entry FileEntryData, reader *Reader) {
 func (fs *FS) AddPak(reader *Reader) error {
 	err := reader.ReadFileTable(func(path string, entry FileEntryData) bool {
 		// Skip directory entries; we manually construct dirents.
-		if entry.Compression == 2 {
+		if entry.Type&FileTypeMask == FileTypeDir {
 			return true
 		}
 		fs.addfile(path, entry, reader)

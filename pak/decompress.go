@@ -12,7 +12,7 @@ var valuePad = []uint16{
 func decompress(entry FileEntryData, f io.ReaderAt) ([]byte, error) {
 	var out []byte
 
-	if entry.Compression == 0 {
+	if entry.Type&FileTypeMask == FileTypeBasic {
 		out = make([]byte, entry.PackedFileSize)
 		_, err := f.ReadAt(out, int64(entry.Offset))
 		if err != nil {
@@ -38,7 +38,7 @@ func decompress(entry FileEntryData, f io.ReaderAt) ([]byte, error) {
 			realseq = seq
 			j++
 
-			if entry.Compression == 3 {
+			if entry.Type&FileTypeMask == FileTypeLz2 {
 				seq ^= 0xC8
 			}
 		} else {
@@ -53,7 +53,7 @@ func decompress(entry FileEntryData, f io.ReaderAt) ([]byte, error) {
 			value := binary.LittleEndian.Uint16(buf[0:2])
 			j += 2
 
-			if entry.Compression == 3 {
+			if entry.Type&FileTypeMask == FileTypeLz2 {
 				value ^= valuePad[(realseq>>3)&7]
 			}
 
