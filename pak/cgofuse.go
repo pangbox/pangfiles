@@ -1,4 +1,6 @@
 // +build !nofuse
+// +build !freebsd
+// +build !linux
 // +build windows cgo
 
 package pak
