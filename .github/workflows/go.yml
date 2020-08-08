@@ -30,6 +30,13 @@ jobs:
     - name: Test
       run: CGO_ENABLED=0 go test -v ./...
 
+    - name: Docker Login
+      uses: azure/docker-login@v1
+      with:
+        login-server: docker.pkg.github.com
+        username: $GITHUB_ACTOR
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Build Releases
       run: |
         mkdir bin
