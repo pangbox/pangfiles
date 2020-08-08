@@ -3,7 +3,8 @@ name: XGo Docker
 on:
   push:
     branches: [ master ]
-
+    paths:
+      - 'ci/xgo/**'
 jobs:
   build:
     name: Build
