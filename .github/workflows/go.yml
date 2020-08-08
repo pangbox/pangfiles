@@ -53,8 +53,8 @@ jobs:
         CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o bin/updatelist-freebsd-amd64 ./cmd/updatelist
         CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/pak-linux-amd64 ./cmd/pak
         CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/updatelist-linux-amd64 ./cmd/updatelist
-        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/pak-windows-amd64 ./cmd/pak
-        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/updatelist-windows-amd64 ./cmd/updatelist
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/pak-windows-amd64.exe ./cmd/pak
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/updatelist-windows-amd64.exe ./cmd/updatelist
 
     - name: Upload builds
       uses: actions/upload-artifact@v2
