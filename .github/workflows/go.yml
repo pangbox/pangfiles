@@ -65,7 +65,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.event.action == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     steps:
     - name: Download builds
