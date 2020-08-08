@@ -58,6 +58,7 @@ jobs:
   release:
     if: github.event.action == 'push' && startsWith(github.ref, 'refs/tags/')
     needs: build
+    steps:
     - name: Download builds
       uses: actions/download-artifact@v1
       with:
