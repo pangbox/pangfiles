@@ -3,16 +3,15 @@ name: Go
 on:
   push:
     branches: [ master ]
+    tags: [ v* ]
   pull_request:
     branches: [ master ]
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-
     - name: Set up Go 1.14+
       uses: actions/setup-go@v2
       with:
@@ -25,8 +24,75 @@ jobs:
     - name: Get dependencies
       run: go get -v -t -d ./...
 
-    - name: Build
+    - name: Build (Smoke test)
       run: CGO_ENABLED=0 go build -v ./...
 
     - name: Test
       run: CGO_ENABLED=0 go test -v ./...
+
+    - name: Build Releases
+      run: |
+        mkdir bin
+
+        # Platforms that REQUIRE Cgo (because they need libfuse) will be compiled with Xgo.
+        go get -u github.com/crazy-max/xgo
+        xgo --image=docker.pkg.github.com/pangbox/pangfiles/xgo:latest --targets=darwin/amd64 --pkg=cmd/pak -out bin/pak .
+        mv bin/pak-darwin-10.6-amd64 bin/pak-macos-amd64
+        xgo --image=docker.pkg.github.com/pangbox/pangfiles/xgo:latest --targets=darwin/amd64 --pkg=cmd/updatelist -out bin/updatelist .
+        mv bin/updatelist-darwin-10.6-amd64 bin/updatelist-macos-amd64
+
+        # Other platforms that do not require Cgo (because they prefer Bazilfuse or WinFSP over libfuse) are cross compiled natively.
+        CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o bin/pak-freebsd-amd64 ./cmd/pak
+        CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o bin/updatelist-freebsd-amd64 ./cmd/updatelist
+        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/pak-linux-amd64 ./cmd/pak
+        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/updatelist-linux-amd64 ./cmd/updatelist
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/pak-windows-amd64 ./cmd/pak
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/updatelist-windows-amd64 ./cmd/updatelist
+
+    - name: Upload builds
+      uses: actions/upload-artifact@v2
+      with:
+        name: bin
+        path: bin/*
+  
+  release:
+    if: github.event.action == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    - name: Download builds
+      uses: actions/download-artifact@v1
+      with:
+        name: bin
+
+    - name: Zip builds
+      run: |
+        for i in bin/*
+        do
+          OUT="$PWD/$(basename $i).zip"
+          cd "$(dirname $i)"
+          zip "$OUT" "$(basename $i)"
+          cd -
+        done
+
+    - name: Get the tag name
+      id: tag
+      run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1.1.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.VERSION  }}
+        release_name: ${{ steps.tag.outputs.VERSION  }}
+        draft: true
+
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }, with: { upload_url: ${{ steps.create_release.outputs.upload_url }}, asset_path: pak-darwin-10.6-amd64, asset_name: pak-darwin-10.6-amd64, asset_content_type: application/zip }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }, with: { upload_url: ${{ steps.create_release.outputs.upload_url }}, asset_path: pak-freebsd-amd64, asset_name: pak-freebsd-amd64, asset_content_type: application/zip }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }, with: { upload_url: ${{ steps.create_release.outputs.upload_url }}, asset_path: pak-linux-amd64, asset_name: pak-linux-amd64, asset_content_type: application/zip }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }, with: { upload_url: ${{ steps.create_release.outputs.upload_url }}, asset_path: pak-windows-4.0-amd64.exe, asset_name: pak-windows-4.0-amd64.exe, asset_content_type: application/zip }
+
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }, with: { upload_url: ${{ steps.create_release.outputs.upload_url }}, asset_path: updatelist-darwin-10.6-amd64, asset_name: updatelist-darwin-10.6-amd64, asset_content_type: application/zip }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }, with: { upload_url: ${{ steps.create_release.outputs.upload_url }}, asset_path: updatelist-freebsd-amd64, asset_name: updatelist-freebsd-amd64, asset_content_type: application/zip }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }, with: { upload_url: ${{ steps.create_release.outputs.upload_url }}, asset_path: updatelist-linux-amd64, asset_name: updatelist-linux-amd64, asset_content_type: application/zip }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }, with: { upload_url: ${{ steps.create_release.outputs.upload_url }}, asset_path: updatelist-windows-4.0-amd64.exe, asset_name: updatelist-windows-4.0-amd64.exe, asset_content_type: application/zip }
