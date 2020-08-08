@@ -1,0 +1,28 @@
+name: XGo Docker
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+    - 'ci/xgo/**'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Log in
+      run: docker login -u ${{ github.repostitory }} -p ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Build
+      run: docker build -t image ci/xgo
+
+    - name: Publish
+      run: |
+        docker tag image docker.pkg.github.com/pangbox/pangfiles/xgo:${GITHUB_SHA}
+        docker push docker.pkg.github.com/pangbox/pangfiles/xgo:${GITHUB_SHA}
+        docker tag image docker.pkg.github.com/pangbox/pangfiles/xgo:latest
+        docker push docker.pkg.github.com/pangbox/pangfiles/xgo:latest
