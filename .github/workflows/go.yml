@@ -16,7 +16,6 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ^1.14
-      id: go
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
@@ -43,18 +42,13 @@ jobs:
 
         # Platforms that REQUIRE Cgo (because they need libfuse) will be compiled with Xgo.
         go get -u github.com/crazy-max/xgo
-        xgo --image=docker.pkg.github.com/pangbox/pangfiles/xgo:latest --targets=darwin/amd64 --pkg=cmd/pak -out bin/pak .
-        mv bin/pak-darwin-10.6-amd64 bin/pak-macos-amd64
-        xgo --image=docker.pkg.github.com/pangbox/pangfiles/xgo:latest --targets=darwin/amd64 --pkg=cmd/updatelist -out bin/updatelist .
-        mv bin/updatelist-darwin-10.6-amd64 bin/updatelist-macos-amd64
+        xgo --image=docker.pkg.github.com/pangbox/pangfiles/xgo:latest --targets=darwin/amd64 --pkg=cmd/pang -out bin/pang .
+        mv bin/pang-darwin-10.6-amd64 bin/pang-macos-amd64
 
         # Other platforms that do not require Cgo (because they prefer Bazilfuse or WinFSP over libfuse) are cross compiled natively.
-        CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o bin/pak-freebsd-amd64 ./cmd/pak
-        CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o bin/updatelist-freebsd-amd64 ./cmd/updatelist
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/pak-linux-amd64 ./cmd/pak
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/updatelist-linux-amd64 ./cmd/updatelist
-        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/pak-windows-amd64.exe ./cmd/pak
-        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/updatelist-windows-amd64.exe ./cmd/updatelist
+        CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o bin/pang-freebsd-amd64 ./cmd/pang
+        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/pang-linux-amd64 ./cmd/pang
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/pang-windows-amd64.exe ./cmd/pang
 
     - name: Upload builds
       uses: actions/upload-artifact@v2
@@ -97,12 +91,7 @@ jobs:
         release_name: ${{ steps.tag.outputs.VERSION  }}
         draft: true
 
-    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pak-macos-amd64.zip, asset_name: pak-macos-amd64.zip, asset_content_type: application/zip } }
-    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pak-freebsd-amd64.zip, asset_name: pak-freebsd-amd64.zip, asset_content_type: application/zip } }
-    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pak-linux-amd64.zip, asset_name: pak-linux-amd64.zip, asset_content_type: application/zip } }
-    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pak-windows-amd64.exe.zip, asset_name: pak-windows-amd64.exe.zip, asset_content_type: application/zip } }
-
-    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: updatelist-macos-amd64.zip, asset_name: updatelist-macos-amd64.zip, asset_content_type: application/zip } }
-    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: updatelist-freebsd-amd64.zip, asset_name: updatelist-freebsd-amd64.zip, asset_content_type: application/zip } }
-    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: updatelist-linux-amd64.zip, asset_name: updatelist-linux-amd64.zip, asset_content_type: application/zip } }
-    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: updatelist-windows-amd64.exe.zip, asset_name: updatelist-windows-amd64.exe.zip, asset_content_type: application/zip } }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-macos-amd64.zip, asset_name: pang-macos-amd64.zip, asset_content_type: application/zip } }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-freebsd-amd64.zip, asset_name: pang-freebsd-amd64.zip, asset_content_type: application/zip } }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-linux-amd64.zip, asset_name: pang-linux-amd64.zip, asset_content_type: application/zip } }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-windows-amd64.exe.zip, asset_name: pang-windows-amd64.exe.zip, asset_content_type: application/zip } }
