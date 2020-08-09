@@ -68,13 +68,11 @@ func getPakKey(region string, patterns []string) pyxtea.Key {
 
 func main() {
 	subcommands.Register(subcommands.HelpCommand(), "")
-	subcommands.Register(subcommands.FlagsCommand(), "")
-	subcommands.Register(subcommands.CommandsCommand(), "")
-	subcommands.Register(&cmdPakMount{}, "")
-	subcommands.Register(&cmdPakExtract{}, "")
-	subcommands.Register(&cmdUpdateListServe{}, "")
-	subcommands.Register(&cmdUpdateListEncrypt{}, "")
-	subcommands.Register(&cmdUpdateListDecrypt{}, "")
+	subcommands.Register(&cmdPakMount{}, "paks")
+	subcommands.Register(&cmdPakExtract{}, "paks")
+	subcommands.Register(&cmdUpdateListServe{}, "updatelists")
+	subcommands.Register(&cmdUpdateListEncrypt{}, "updatelists")
+	subcommands.Register(&cmdUpdateListDecrypt{}, "updatelists")
 
 	flag.Parse()
 	ctx := context.Background()
