@@ -17,6 +17,9 @@ var (
 	// ErrInvalidSignature is returned when the pak file contains an invalid
 	// signature.
 	ErrInvalidSignature = errors.New("invalid signature")
+	// ErrStopIteration is returned if iteration ends early because the
+	// callback returned false.
+	ErrStopIteration = errors.New("iteration stopped")
 )
 
 // ReaderAtLen is an io.ReaderAt that supports returning length.
@@ -127,7 +130,7 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 		}
 
 		if !callback(string(path), entry) {
-			return nil
+			return ErrStopIteration
 		}
 	}
 
