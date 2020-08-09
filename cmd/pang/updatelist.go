@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/google/subcommands"
 	"github.com/pangbox/pangfiles/crypto/pyxtea"
@@ -53,14 +54,14 @@ func (*cmdUpdateListServe) Synopsis() string {
 	return "serves an updatelist for a game folder"
 }
 func (*cmdUpdateListServe) Usage() string {
-	return `pak-extract [-region <code>] [-listen <address>] <pak files>:
+	return `pak-extract [-region <code>] [-listen <address>] <game folder>:
 	Serves an automatically updating updatelist for a game folder.
 
 `
 }
 
 func (p *cmdUpdateListServe) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&p.region, "region", "us", "region to use (us, jp, th, eu, id, kr)")
+	f.StringVar(&p.region, "region", "", "region to use (us, jp, th, eu, id, kr)")
 	f.StringVar(&p.listen, "listen", ":8080", "address to listen on")
 }
 
@@ -72,9 +73,17 @@ func (p *cmdUpdateListServe) Execute(_ context.Context, f *flag.FlagSet, _ ...in
 		log.Println("Not enough arguments. Try specifying a game folder.")
 		return subcommands.ExitUsageError
 	}
+
+	dir := f.Arg(0)
+
+	key := getPakKey(p.region, []string{
+		filepath.Join(dir, "projectg*.pak"),
+		filepath.Join(dir, "ProjectG*.pak"),
+	})
+
 	s := server{
-		key:   getRegionKey(p.region),
-		dir:   f.Arg(0),
+		key:   key,
+		dir:   dir,
 		cache: map[string]cacheentry{},
 	}
 	if err := http.ListenAndServe(p.listen, &s); err != nil {
@@ -148,8 +157,8 @@ func (p *cmdUpdateListDecrypt) Execute(_ context.Context, f *flag.FlagSet, _ ...
 		log.Println("Too many arguments specified.")
 		return subcommands.ExitUsageError
 	}
-	in := openfile(f.Arg(1))
-	out := createfile(f.Arg(2))
+	in := openfile(f.Arg(0))
+	out := createfile(f.Arg(1))
 	defer closefiles(in, out)
 	if err := pyxtea.DecipherStreamTrimNull(getRegionKey(p.region), in, out); err != nil {
 		log.Println(err)
