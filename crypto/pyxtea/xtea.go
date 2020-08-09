@@ -184,7 +184,7 @@ func DecipherStreamTrimNull(key Key, r io.Reader, w io.Writer) error {
 		n, err = w.Write(buf[0 : 8-nullrun])
 		if err != nil {
 			return err
-		} else if n != 8 {
+		} else if n != (int)(8-nullrun) {
 			return io.ErrShortWrite
 		}
 	}
