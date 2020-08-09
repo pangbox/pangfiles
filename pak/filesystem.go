@@ -2,7 +2,9 @@ package pak
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -190,6 +192,85 @@ func (fs *FS) LoadPaksFromGlob(pattern string) error {
 	}
 	sort.Strings(paths)
 	return fs.LoadPaksFromFiles(paths)
+}
+
+// DetectRegions tries to decode the file table using each of the keys from
+// the keys slice in order. Keys which have no errenous filenames are
+// returned.
+func DetectRegions(patterns []string, keys []pyxtea.Key) ([]pyxtea.Key, error) {
+	valid := []pyxtea.Key{}
+	files := []*mmap.ReaderAt{}
+	defer func() {
+		for _, file := range files {
+			file.Close()
+		}
+	}()
+
+	for _, pattern := range patterns {
+		paths, err := filepath.Glob(pattern)
+		if err != nil {
+			return []pyxtea.Key{}, err
+		}
+		for _, path := range paths {
+			f, err := mmap.Open(path)
+			if err != nil {
+				return []pyxtea.Key{}, err
+			}
+			files = append(files, f)
+		}
+	}
+
+KeyIter:
+	for _, key := range keys {
+		for _, file := range files {
+			r, err := NewReader(key, file)
+			if err != nil {
+				return []pyxtea.Key{}, err
+			}
+			err = r.ReadFileTable(func(path string, entry FileEntryData) bool {
+				// Work around the fact that somewhat arbitrarily we seem to see truncated looking filenames.
+				return !strings.ContainsRune(strings.TrimRight(path, "\uFFFD"), rune(0xFFFD))
+			})
+			if err == ErrStopIteration {
+				continue KeyIter
+			} else if err != nil {
+				return []pyxtea.Key{}, err
+			}
+		}
+		valid = append(valid, key)
+	}
+
+	return valid, nil
+}
+
+// DetectRegion is like DetectRegions, but only returns one key, and fails if
+// more than one or no keys pass validation. As a special case, if *all*
+// regions validate, the first key is selected - this helps auto-detect
+// succeed when dealing with pak files that contain no XTEA-ciphered entries.
+func DetectRegion(patterns []string, keys []pyxtea.Key) (pyxtea.Key, error) {
+	if len(keys) < 1 {
+		return pyxtea.Key{}, errors.New("no valid regions detected")
+	}
+	valid, err := DetectRegions(patterns, keys)
+	if err != nil {
+		return pyxtea.Key{}, err
+	} else if len(valid) == len(keys) {
+		return keys[0], nil
+	} else if len(valid) > 1 {
+		return pyxtea.Key{}, fmt.Errorf("ambiguous region (%d regions validated)", len(valid))
+	} else if len(valid) == 0 {
+		return pyxtea.Key{}, errors.New("no valid regions detected")
+	}
+	return valid[0], nil
+}
+
+// MustDetectRegion is like DetectRegion but crashes on error.
+func MustDetectRegion(patterns []string, keys []pyxtea.Key) pyxtea.Key {
+	region, err := DetectRegion(patterns, keys)
+	if err != nil {
+		log.Fatalln("Error auto-detecting pak region:", err)
+	}
+	return region
 }
 
 // NumFiles returns the number of files in the filesystem.
