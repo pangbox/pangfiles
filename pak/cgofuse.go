@@ -100,7 +100,10 @@ func (f *cfsfuse) Open(path string, flags int) (errc int, fh uint64) {
 func (f *cfsfuse) Getattr(path string, stat *fuse.Stat_t, fh uint64) (errc int) {
 	d, errc := f.lookup(path)
 	if errc != 0 {
-		log.Println("Getattr", path, "=> not found")
+		// Filter out some common noise to make the error output more useful.
+		if !strings.HasSuffix(path, "/folder.jpg") && !strings.HasSuffix(path, "/folder.gif") && !strings.HasSuffix(path, "/desktop.ini") {
+			log.Println("Getattr", path, "=> not found")
+		}
 		return errc
 	}
 
