@@ -61,9 +61,8 @@ func getPakKey(region string, patterns []string) pyxtea.Key {
 		key := pak.MustDetectRegion(patterns, xteaKeys)
 		log.Printf("Detected pak region as %s.", strings.ToUpper(getKeyRegion(key)))
 		return key
-	} else {
-		return getRegionKey(region)
 	}
+	return getRegionKey(region)
 }
 
 func main() {
