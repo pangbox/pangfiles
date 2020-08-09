@@ -6,25 +6,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/google/subcommands"
-	"github.com/pangbox/pangfiles/crypto/pyxtea"
 	"github.com/pangbox/pangfiles/pak"
 )
-
-func getPakKey(region string, patterns []string) pyxtea.Key {
-	var key pyxtea.Key
-	if region == "" {
-		log.Println("Auto-detecting pak region (use -region to improve startup delay.)")
-		key = pak.MustDetectRegion(patterns, xteaKeys)
-		log.Printf("Detected pak region as %s.", strings.ToUpper(getKeyRegion(key)))
-	} else {
-		key = getRegionKey(region)
-	}
-	return key
-}
 
 type cmdPakMount struct {
 	region string

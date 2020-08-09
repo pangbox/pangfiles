@@ -5,9 +5,11 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/google/subcommands"
 	"github.com/pangbox/pangfiles/crypto/pyxtea"
+	"github.com/pangbox/pangfiles/pak"
 )
 
 var xteaKeys = []pyxtea.Key{
@@ -51,6 +53,17 @@ func getKeyRegion(key pyxtea.Key) string {
 		panic("programming error: unexpected key")
 	}
 	return region
+}
+
+func getPakKey(region string, patterns []string) pyxtea.Key {
+	if region == "" {
+		log.Println("Auto-detecting pak region (use -region to improve startup delay.)")
+		key := pak.MustDetectRegion(patterns, xteaKeys)
+		log.Printf("Detected pak region as %s.", strings.ToUpper(getKeyRegion(key)))
+		return key
+	} else {
+		return getRegionKey(region)
+	}
 }
 
 func main() {
