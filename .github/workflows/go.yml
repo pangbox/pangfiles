@@ -55,6 +55,15 @@ jobs:
       with:
         name: bin
         path: bin/*
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        version: v1.29
   
   release:
     name: Release
