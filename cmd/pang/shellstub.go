@@ -7,6 +7,7 @@ package main
 
 import "log"
 
-func openfolder(folder string) {
+func openfolder(folder string) error {
 	log.Println(folder)
+	return nil
 }

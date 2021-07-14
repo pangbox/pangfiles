@@ -43,7 +43,9 @@ func NewReader(k pyxtea.Key, r ReaderAtLen) (*Reader, error) {
 	if _, err := r.ReadAt(buf[:], int64(r.Len()-TrailerLen)); err != nil {
 		return nil, fmt.Errorf("reading trailer: %w", err)
 	}
-	restruct.Unpack(buf[:], binary.LittleEndian, &n.t)
+	if err := restruct.Unpack(buf[:], binary.LittleEndian, &n.t); err != nil {
+		return nil, err
+	}
 	if n.t.Signature != 0x12 {
 		return nil, ErrInvalidSignature
 	}

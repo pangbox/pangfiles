@@ -53,12 +53,12 @@ func (s *server) calcEntry(wg *sync.WaitGroup, entry *updatelist.FileInfo, f os.
 	}
 }
 
-func (s *server) updateList(rw io.Writer) {
+func (s *server) updateList(rw io.Writer) error {
 	start := time.Now()
 
 	files, err := ioutil.ReadDir(s.dir)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	doc := updatelist.Document{}
@@ -103,24 +103,34 @@ func (s *server) updateList(rw io.Writer) {
 
 	data, err := litexml.Marshal(doc)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	pyxtea.EncipherStreamPadNull(s.key, bytes.NewReader(data), rw)
+	if err := pyxtea.EncipherStreamPadNull(s.key, bytes.NewReader(data), rw); err != nil {
+		return err
+	}
 
 	log.Printf("Updatelist served in %s (cache hits: %d, misses: %d)", time.Since(start), hit, miss)
+	return nil
 }
 
-func (s *server) extracontents(w io.Writer) {
-	w.Write([]byte(`<?xml version="1.0" standalone="yes" ?><extracontents><themes><pangya_default src="pangya_default.xml" url="http://127.0.0.1:8080/S4_Patch/extracontents/default/"/></themes></extracontents>`))
+func (s *server) extracontents(w io.Writer) error {
+	if _, err := w.Write([]byte(`<?xml version="1.0" standalone="yes" ?><extracontents><themes><pangya_default src="pangya_default.xml" url="http://127.0.0.1:8080/S4_Patch/extracontents/default/"/></themes></extracontents>`)); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 	log.Printf("%s %s", r.Method, r.URL)
 	if strings.Contains(strings.ToLower(r.URL.Path), "updatelist") {
-		s.updateList(w)
+		if err := s.updateList(w); err != nil {
+			log.Printf("Error writing updateList: %v", err)
+		}
 	} else if strings.Contains(strings.ToLower(r.URL.Path), "extracontents") {
-		s.extracontents(w)
+		if err := s.extracontents(w); err != nil {
+			log.Printf("Error writing extracontents: %v", err)
+		}
 	}
 }

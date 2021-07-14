@@ -49,7 +49,10 @@ func (p *cmdPakMount) Execute(_ context.Context, f *flag.FlagSet, _ ...interface
 	pakfiles := argv[:argc-1]
 	mountpoint := argv[argc-1]
 
-	os.MkdirAll(mountpoint, 0o775)
+	err := os.MkdirAll(mountpoint, 0o775)
+	if err != nil {
+		log.Printf("Warning: couldn't make mount dir: %v", err)
+	}
 
 	fs, err := pak.LoadPaks(getPakKey(p.region, f.Args()), pakfiles)
 	if err != nil {
@@ -62,7 +65,9 @@ func (p *cmdPakMount) Execute(_ context.Context, f *flag.FlagSet, _ ...interface
 			time.Sleep(100 * time.Millisecond)
 			if stat, err := os.Stat(mountpoint); !os.IsNotExist(err) {
 				if stat.IsDir() {
-					openfolder(mountpoint)
+					if err := openfolder(mountpoint); err != nil {
+						fmt.Printf("Tried to mount folder %s, failed: %v\n", mountpoint, err)
+					}
 				}
 				return
 			}
@@ -107,7 +112,9 @@ func (p *cmdPakExtract) Execute(_ context.Context, f *flag.FlagSet, _ ...interfa
 	}
 
 	if p.out != "" {
-		os.MkdirAll(p.out, 0o775)
+		if err := os.MkdirAll(p.out, 0o775); err != nil {
+			log.Printf("Warning: couldn't make output dir: %v", err)
+		}
 	}
 
 	fs, err := pak.LoadPaks(getPakKey(p.region, f.Args()), f.Args())
