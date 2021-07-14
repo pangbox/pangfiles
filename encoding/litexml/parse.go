@@ -179,12 +179,6 @@ func (p *parser) acceptall(m runematcher, limit int) []rune {
 	return result
 }
 
-func (p *parser) unaccepted() {
-	r := p.readrune()
-	p.unreadrune()
-	panic(p.badsyntax("expected %c, got %c", p.rejects, r))
-}
-
 func (p *parser) eatspace() {
 	r := rune(0)
 	for p.accept(matchspace, &r) {

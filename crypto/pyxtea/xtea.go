@@ -171,7 +171,7 @@ func DecipherStreamTrimNull(key Key, r io.Reader, w io.Writer) error {
 			}
 
 			// End of null run; we've hit non-null bytes. Dump null run onto stream.
-			io.CopyN(w, util.NullReader{}, nullrun)
+			_, err = io.CopyN(w, util.NullReader{}, nullrun)
 			if err != nil {
 				return err
 			} else if n != 8 {

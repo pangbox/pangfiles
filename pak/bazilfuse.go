@@ -40,7 +40,9 @@ func (fs *FS) Mount(mountpoint string) error {
 	go func() {
 		<-i
 		fmt.Println("Received interrupt, exiting.")
-		fuse.Unmount(mountpoint)
+		if err := fuse.Unmount(mountpoint); err != nil {
+			fmt.Println("fuse.Unmount:", err)
+		}
 		os.Exit(0)
 	}()
 

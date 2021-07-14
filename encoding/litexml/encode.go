@@ -22,15 +22,27 @@ func NewEncoder(w io.Writer) *Encoder {
 	}
 }
 
-func (e *Encoder) tagattr(attr, value string) {
-	e.e.emitattr(attr, value)
+func (e *Encoder) tagattr(attr, value string) error {
+	if err := e.e.emitattr(attr, value); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (e *Encoder) unarytag(tag, attr, value string) {
-	e.e.indent(e.indent)
-	e.e.emittagopenpart(tag)
-	e.e.emitattr(attr, value)
-	e.e.emittagcloseendpart()
+func (e *Encoder) unarytag(tag, attr, value string) error {
+	if err := e.e.indent(e.indent); err != nil {
+		return err
+	}
+	if err := e.e.emittagopenpart(tag); err != nil {
+		return err
+	}
+	if err := e.e.emitattr(attr, value); err != nil {
+		return err
+	}
+	if err := e.e.emittagcloseendpart(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (e *Encoder) scalarattrval(i interface{}) (string, bool) {
@@ -73,10 +85,16 @@ func (e *Encoder) encode(tag string, value interface{}) error {
 
 	if tag != "" {
 		if e.intag {
-			e.e.emittagendpart()
+			if err := e.e.emittagendpart(); err != nil {
+				return err
+			}
 		}
-		e.e.indent(e.indent)
-		e.e.emittagopenpart(tag)
+		if err := e.e.indent(e.indent); err != nil {
+			return err
+		}
+		if err := e.e.emittagopenpart(tag); err != nil {
+			return err
+		}
 		e.intag = true
 		e.indent++
 	}
@@ -100,7 +118,9 @@ func (e *Encoder) encode(tag string, value interface{}) error {
 			if tag == "" {
 				// DocType
 				if fv, ok := ifv.(DocumentInfo); ok {
-					e.e.emitdt(fv)
+					if err := e.e.emitdt(fv); err != nil {
+						return err
+					}
 					continue
 				}
 				// Attr in tag
@@ -111,16 +131,22 @@ func (e *Encoder) encode(tag string, value interface{}) error {
 					panic("empty attr for standalone tag")
 				}
 				if scalar, ok := e.scalarattrval(ifv); ok {
-					e.tagattr(attr, scalar)
+					if err := e.tagattr(attr, scalar); err != nil {
+						return err
+					}
 					continue
 				}
 			} else {
 				if e.intag {
 					e.intag = false
-					e.e.emittagendpart()
+					if err := e.e.emittagendpart(); err != nil {
+						return err
+					}
 				}
 				if scalar, ok := e.scalarattrval(ifv); ok {
-					e.unarytag(tag, attr, scalar)
+					if err := e.unarytag(tag, attr, scalar); err != nil {
+						return err
+					}
 					continue
 				}
 			}
@@ -130,11 +156,15 @@ func (e *Encoder) encode(tag string, value interface{}) error {
 			}
 			if rft.Type.Kind() == reflect.Slice || rft.Type.Kind() == reflect.Array {
 				for i, n := 0, rfv.Len(); i < n; i++ {
-					e.encode(tag, rfv.Index(i).Interface())
+					if err := e.encode(tag, rfv.Index(i).Interface()); err != nil {
+						return err
+					}
 				}
 				continue
 			} else if rft.Type.Kind() == reflect.Struct {
-				e.encode(tag, ifv)
+				if err := e.encode(tag, ifv); err != nil {
+					return err
+				}
 				continue
 			}
 			panic("don't know what to do with field: " + rft.Name)
@@ -142,12 +172,18 @@ func (e *Encoder) encode(tag string, value interface{}) error {
 		case "inner":
 			if e.intag {
 				e.intag = false
-				e.e.emittagendpart()
+				if err := e.e.emittagendpart(); err != nil {
+					return err
+				}
 			}
 			switch fv := ifv.(type) {
 			case string:
-				e.e.indent(e.indent)
-				e.e.emitcontent(fv)
+				if err := e.e.indent(e.indent); err != nil {
+					return err
+				}
+				if err := e.e.emitcontent(fv); err != nil {
+					return err
+				}
 				continue
 			default:
 				panic("invalid content type")
@@ -159,11 +195,19 @@ func (e *Encoder) encode(tag string, value interface{}) error {
 		e.indent--
 		if e.intag {
 			e.intag = false
-			e.e.emittagcloseendpart()
+			if err := e.e.emittagcloseendpart(); err != nil {
+				return err
+			}
 		} else {
-			e.e.indent(e.indent)
-			e.e.emittagclosepart(tag)
-			e.e.emittagendpart()
+			if err := e.e.indent(e.indent); err != nil {
+				return err
+			}
+			if err := e.e.emittagclosepart(tag); err != nil {
+				return err
+			}
+			if err := e.e.emittagendpart(); err != nil {
+				return err
+			}
 		}
 	}
 

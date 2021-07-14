@@ -1,3 +1,4 @@
+//nolint:unused,deadcode
 package pak
 
 import (
@@ -23,7 +24,7 @@ func makecache() cache {
 
 func (c cache) set(key string, data []byte) {
 	hash := fnv.New32()
-	hash.Write([]byte(key))
+	_, _ = hash.Write([]byte(key))
 	index := uint8(hash.Sum32() & 0xFF)
 	c[index].mutex.Lock()
 	defer c[index].mutex.Unlock()
@@ -33,7 +34,7 @@ func (c cache) set(key string, data []byte) {
 
 func (c cache) get(key string) []byte {
 	hash := fnv.New32()
-	hash.Write([]byte(key))
+	_, _ = hash.Write([]byte(key))
 	index := uint8(hash.Sum32() & 0xFF)
 	c[index].mutex.RLock()
 	defer c[index].mutex.RUnlock()
