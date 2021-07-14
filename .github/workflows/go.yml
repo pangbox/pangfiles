@@ -41,7 +41,7 @@ jobs:
         mkdir bin
 
         # Platforms that REQUIRE Cgo (because they need libfuse) will be compiled with Xgo.
-        go install github.com/crazy-max/xgo@v0.6.7
+        go install github.com/crazy-max/xgo@v0.5.0
         xgo --targets=darwin/amd64 --pkg=cmd/pang --out bin/pang .
         mv bin/pang-darwin-10.6-amd64 bin/pang-macos-amd64
 
