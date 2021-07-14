@@ -42,7 +42,7 @@ jobs:
 
         # Platforms that REQUIRE Cgo (because they need libfuse) will be compiled with Xgo.
         go install github.com/crazy-max/xgo@v0.5.0
-        xgo --image=docker.pkg.github.com/pangbox/pangfiles/xgo:latest --targets=darwin/amd64 --pkg=cmd/pang --out bin/pang .
+        xgo --docker-repo=docker.pkg.github.com/pangbox/pangfiles --docker-image=xgo:latest --targets=darwin/amd64 --pkg=cmd/pang --out bin/pang .
         mv bin/pang-darwin-10.6-amd64 bin/pang-macos-amd64
 
         # Other platforms that do not require Cgo (because they prefer Bazilfuse or WinFSP over libfuse) are cross compiled natively.
