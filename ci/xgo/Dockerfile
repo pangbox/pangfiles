@@ -23,32 +23,33 @@
 # --
 # https://github.com/billziss-gh/cgofuse/
 
-FROM crazymax/xgo:1.14.x
+FROM crazymax/xgo:1.16.6
+
+# Install latest 7-zip for newer DMG/HFS support.
+RUN wget https://www.7-zip.org/a/7z2102-linux-x64.tar.xz && \
+    tar xvf 7z2102-linux-x64.tar.xz -C /usr/bin/
+
+ARG macfuse_version=4.1.2
+ARG winfsp_version=1.10B2
+RUN wget -q -O macfuse.dmg "https://github.com/osxfuse/osxfuse/releases/download/macfuse-${macfuse_version}/macfuse-${macfuse_version}.dmg" && \
+    7zz e macfuse.dmg "macFUSE/Extras/macFUSE ${macfuse_version}.pkg" && \
+    7zz e "macFUSE ${macfuse_version}.pkg" Core.pkg/Payload && \
+    7zz e Payload && \
+    (7zz x Payload~ -o/tmp || true) && \
+    mkdir /usr/local/include/osxfuse && \
+    cp -R /tmp/usr/local/include/fuse /usr/local/include/osxfuse && \
+    ls -lah /tmp/usr/local/lib/ && \
+    cp /tmp/usr/local/lib/libfuse.2.dylib /usr/local/lib/libosxfuse.dylib
 
 RUN dpkg --add-architecture i386 && \
     dpkg --add-architecture amd64 && \
     apt-get update && \
-    apt-get install -y --no-install-recommends p7zip-full
-
-ARG osxfuse_version=3.8.3
-ARG winfsp_version=1.8B1
-
-RUN wget -q -O osxfuse.dmg "https://github.com/osxfuse/osxfuse/releases/download/osxfuse-${osxfuse_version}/osxfuse-${osxfuse_version}.dmg" && \
-    7z e osxfuse.dmg "FUSE for macOS/Extras/FUSE for macOS ${osxfuse_version}.pkg" && \
-    7z e "FUSE for macOS ${osxfuse_version}.pkg" Core.pkg/Payload && \
-    7z e Payload && \
-    7z x Payload~ -o/tmp && \
-    cp -R /tmp/usr/local/include/osxfuse /usr/local/include && \
-    ls -lah /tmp/usr/local/lib/ && \
-    cp /tmp/usr/local/lib/libosxfuse.2.dylib /usr/local/lib/libosxfuse.dylib
-
-RUN apt-get update && \
     apt-get install -y --no-install-recommends libfuse-dev:i386 && \
     apt-get install -y --no-install-recommends libfuse-dev:amd64 && \
     apt-get download libfuse-dev:i386 && \
     dpkg -x libfuse-dev*i386*.deb /
 
 RUN wget -q -O winfsp.zip "https://github.com/billziss-gh/winfsp/archive/v${winfsp_version}.zip" && \
-    7z e winfsp.zip "winfsp-${winfsp_version}/inc/fuse/*" -o/usr/local/include/winfsp
+    7zz e winfsp.zip "winfsp-${winfsp_version}/inc/fuse/*" -o/usr/local/include/winfsp
 
 ENV OSXCROSS_NO_INCLUDE_PATH_WARNINGS 1
