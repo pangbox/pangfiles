@@ -12,10 +12,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - name: Set up Go 1.14+
+    - name: Set up Go 1.16+
       uses: actions/setup-go@v2
       with:
-        go-version: ^1.14
+        go-version: ^1.16
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
@@ -41,9 +41,11 @@ jobs:
         mkdir bin
 
         # Platforms that REQUIRE Cgo (because they need libfuse) will be compiled with Xgo.
-        go install github.com/crazy-max/xgo@v0.5.0
+        go install github.com/crazy-max/xgo@v0.6.8
         xgo --docker-image=docker.pkg.github.com/pangbox/pangfiles/xgo:latest --targets=darwin/amd64 --pkg=cmd/pang --out bin/pang .
-        mv bin/pang-darwin-10.6-amd64 bin/pang-macos-amd64
+        xgo --docker-image=docker.pkg.github.com/pangbox/pangfiles/xgo:latest --targets=darwin/arm64 --pkg=cmd/pang --out bin/pang .
+        mv bin/pang-darwin-10.12-amd64 bin/pang-macos-amd64
+        mv bin/pang-darwin-10.12-arm64 bin/pang-macos-arm64
 
         # Other platforms that do not require Cgo (because they prefer Bazilfuse or WinFSP over libfuse) are cross compiled natively.
         CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o bin/pang-freebsd-amd64 ./cmd/pang
@@ -102,6 +104,7 @@ jobs:
         draft: true
 
     - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-macos-amd64.zip, asset_name: pang-macos-amd64.zip, asset_content_type: application/zip } }
+    - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-macos-arm64.zip, asset_name: pang-macos-arm64.zip, asset_content_type: application/zip } }
     - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-freebsd-amd64.zip, asset_name: pang-freebsd-amd64.zip, asset_content_type: application/zip } }
     - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-linux-amd64.zip, asset_name: pang-linux-amd64.zip, asset_content_type: application/zip } }
     - { uses: actions/upload-release-asset@v1, env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }, with: { upload_url: "${{ steps.create_release.outputs.upload_url }}", asset_path: pang-windows-amd64.exe.zip, asset_name: pang-windows-amd64.exe.zip, asset_content_type: application/zip } }
