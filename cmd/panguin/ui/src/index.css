@@ -1,0 +1,102 @@
+html {
+    font-family: "Segoe UI", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.explorer-detail-view {
+    border: 1px solid #aaa;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+}
+
+.explorer-detail-pane {
+    flex-grow: 1;
+}
+
+.explorer-detail-row {
+    vertical-align: middle;
+    line-height: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.explorer-detail-pane {
+    overflow-y: auto;
+}
+
+.explorer-detail-pane .explorer-detail-row:nth-child(even) .explorer-detail-cell {
+    background-color: #eee;
+}
+
+.explorer-detail-pane .explorer-detail-row.selected .explorer-detail-cell {
+    background-color: #def;
+}
+
+.explorer-detail-header {
+    border-bottom: 1px solid #aaa;
+}
+
+.explorer-detail-header .explorer-detail-cell {
+    color: #336;
+    transition: background-color 0.2s ease-in-out;
+    overflow: visible;
+}
+
+.explorer-detail-header .explorer-detail-cell:hover {
+    background-color: #def;
+}
+
+.explorer-detail-divider {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: -5px;
+    padding: 0 4px;
+    height: 100%;
+    cursor: col-resize;
+}
+
+.explorer-detail-divider .explorer-detail-divider-line {
+    position: relative;
+    border-right: 1px dashed #aaa;
+    transition: border-right 200ms ease-in-out;
+    height: 100%;
+}
+
+.explorer-detail-divider:hover .explorer-detail-divider-line {
+    border-right: 1px solid black;
+}
+
+.explorer-detail-cell {
+    position: relative;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding-left: 8px;
+    box-sizing: border-box;
+}
