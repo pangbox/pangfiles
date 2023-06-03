@@ -278,6 +278,27 @@ func (fs *FS) NumFiles() int {
 	return len(fs.filetbl)
 }
 
+// ReadFile returns a file by name.
+func (fs *FS) ReadFile(filename string) ([]byte, error) {
+	file, ok := fs.filemap[filename]
+	if !ok {
+		return nil, errors.New("no such file")
+	}
+	data, err := file.reader.ReadFile(file.entry)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// FileNameByIndex returns the path for a given file index.
+func (fs *FS) FileNameByIndex(index int) (string, error) {
+	if index < 0 || index >= len(fs.filetbl) {
+		return "", errors.New("invalid index")
+	}
+	return fs.filetbl[index].path, nil
+}
+
 // ReadFileByIndex returns the path and data for a given file index.
 func (fs *FS) ReadFileByIndex(index int) (string, []byte, error) {
 	if index < 0 || index >= len(fs.filetbl) {
