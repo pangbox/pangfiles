@@ -9,6 +9,6 @@ require (
 	github.com/google/subcommands v1.2.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/exp v0.0.0-20210715201039-d37aa40e8013
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
+	golang.org/x/sys v0.1.0
 	golang.org/x/text v0.3.6
 )
