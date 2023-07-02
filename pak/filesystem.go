@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -214,7 +215,7 @@ func DetectRegions(patterns []string, keys []pyxtea.Key) ([]pyxtea.Key, error) {
 		for _, path := range paths {
 			f, err := mmap.Open(path)
 			if err != nil {
-				return []pyxtea.Key{}, err
+				return []pyxtea.Key{}, fmt.Errorf("loading file %q: %v", path, err)
 			}
 			files = append(files, f)
 		}
@@ -329,8 +330,12 @@ func (fs *FS) Directory(index int) string {
 // Extract extracts the filesystem onto the host disk.
 func (fs *FS) Extract(dest string) error {
 	for _, dir := range fs.dirtbl {
-		if err := os.MkdirAll(filepath.Join(dest, dir.path), 0755); err != nil {
-			return err
+		if dir.path == "" {
+			continue
+		}
+		fulldir := filepath.Join(dest, dir.path)
+		if err := os.MkdirAll(fulldir, 0755); err != nil {
+			return fmt.Errorf("making output directory %q: %v", fulldir, err)
 		}
 	}
 	for _, file := range fs.filetbl {
@@ -339,6 +344,23 @@ func (fs *FS) Extract(dest string) error {
 			return err
 		}
 		err = ioutil.WriteFile(filepath.Join(dest, file.path), data, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ExtractFlat extracts the filesystem onto the host disk, into one flat folder.
+func (fs *FS) ExtractFlat(dest string) error {
+	for _, file := range fs.filetbl {
+		flatname := path.Base(file.path)
+		log.Printf("Extracting %q", file.path)
+		data, err := file.reader.ReadFile(file.entry)
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(dest, flatname), data, 0644)
 		if err != nil {
 			return err
 		}

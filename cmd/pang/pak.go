@@ -54,9 +54,9 @@ func (p *cmdPakMount) Execute(_ context.Context, f *flag.FlagSet, _ ...interface
 		log.Printf("Warning: couldn't make mount dir: %v", err)
 	}
 
-	fs, err := pak.LoadPaks(getPakKey(p.region, f.Args()), pakfiles)
+	fs, err := pak.LoadPaks(getPakKey(p.region, pakfiles), pakfiles)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Loading pak files: %v", err)
 	}
 
 	// We don't currently have a good callback for when fuse mounting has succeeded.
@@ -76,7 +76,7 @@ func (p *cmdPakMount) Execute(_ context.Context, f *flag.FlagSet, _ ...interface
 	}()
 
 	if err := fs.Mount(mountpoint); err != nil {
-		log.Println(err)
+		log.Printf("Mounting filesystem: %v", err)
 		return subcommands.ExitFailure
 	}
 	return subcommands.ExitSuccess
@@ -119,13 +119,20 @@ func (p *cmdPakExtract) Execute(_ context.Context, f *flag.FlagSet, _ ...interfa
 
 	fs, err := pak.LoadPaks(getPakKey(p.region, f.Args()), f.Args())
 	if err != nil {
-		log.Println(err)
+		log.Printf("Loading pak files: %v", err)
 		return subcommands.ExitFailure
 	}
 
-	if err = fs.Extract(p.out); err != nil {
-		log.Println(err)
-		return subcommands.ExitFailure
+	if p.flat {
+		if err = fs.ExtractFlat(p.out); err != nil {
+			log.Printf("Extracting pak files: %v", err)
+			return subcommands.ExitFailure
+		}
+	} else {
+		if err = fs.Extract(p.out); err != nil {
+			log.Printf("Extracting pak files: %v", err)
+			return subcommands.ExitFailure
+		}
 	}
 
 	return subcommands.ExitSuccess
