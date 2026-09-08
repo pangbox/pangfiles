@@ -33,11 +33,12 @@ type Reader struct {
 	k pyxtea.Key
 	r ReaderAtLen
 	t TrailerData
+	i byte
 }
 
 // NewReader returns a new reader.
 func NewReader(k pyxtea.Key, r ReaderAtLen) (*Reader, error) {
-	n := Reader{k: k, r: r}
+	n := Reader{k: k, r: r, i: EntryTypeXOR}
 	buf := [TrailerLen]byte{}
 	// Read trailer
 	if _, err := r.ReadAt(buf[:], int64(r.Len()-TrailerLen)); err != nil {
@@ -49,8 +50,42 @@ func NewReader(k pyxtea.Key, r ReaderAtLen) (*Reader, error) {
 	if n.t.Signature != 0x12 {
 		return nil, ErrInvalidSignature
 	}
+	if n.matchesTableLayout(EntryTypeXTEA) && !n.matchesTableLayout(EntryTypeXOR) {
+		n.i = EntryTypeXTEA
+	}
 
 	return &n, nil
+}
+
+func (r *Reader) matchesTableLayout(implicitType byte) bool {
+	offset := int64(r.t.FileListOffset)
+	end := int64(r.r.Len()) - TrailerLen
+	var header [2]byte
+	for i := uint32(0); i < r.t.FileCount; i++ {
+		if offset > end-14 {
+			return false
+		}
+		if _, err := r.r.ReadAt(header[:], offset); err != nil {
+			return false
+		}
+		entryType := header[1] & EntryTypeMask
+		if entryType == 0 {
+			entryType = implicitType
+		}
+		pathSize := int64(header[0])
+		switch entryType {
+		case EntryTypeXTEA:
+			if pathSize == 0 || pathSize%pyxtea.BlockSize != 0 {
+				return false
+			}
+		case EntryTypeXOR, EntryTypeBasic:
+			pathSize++
+		default:
+			return false
+		}
+		offset += 14 + pathSize
+	}
+	return offset == end
 }
 
 // ReadFileTable reads the file table entirely. The iteration is stopped if
@@ -72,6 +107,11 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 		}
 		foffset += int64(n)
 
+		// Default to implicit type when zero
+		if buf[1]&EntryTypeMask == 0 {
+			buf[1] |= r.i
+		}
+
 		// Handle xtea encryption for the metadata.
 		useXTEA := buf[1]&0xF0 == 0x20
 		if useXTEA {
@@ -89,11 +129,6 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 			return fmt.Errorf("unpacking file entry %d: %w", i, err)
 		}
 
-		// Default to XOR type for legacy entries.
-		if entry.Type&EntryTypeMask == 0 {
-			entry.Type |= EntryTypeXOR
-		}
-
 		path := []byte{}
 
 		switch entry.Type & EntryTypeMask {
@@ -109,6 +144,9 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 			path = append(path, buf[:int(entry.PathLength)]...)
 
 		case EntryTypeXTEA:
+			if entry.PathLength == 0 || int(entry.PathLength)%pyxtea.BlockSize != 0 {
+				return fmt.Errorf("invalid xtea path length for file entry %d: %d", i, entry.PathLength)
+			}
 			if n, err = r.r.ReadAt(buf[:int(entry.PathLength)], foffset); err != nil {
 				return fmt.Errorf("reading xtea path for file entry %d: %w", i, err)
 			}
@@ -116,7 +154,15 @@ func (r *Reader) ReadFileTable(callback func(path string, entry FileEntryData) b
 			if err := pyxtea.Decipher(r.k, buf[:int(entry.PathLength)]); err != nil {
 				return fmt.Errorf("decrypting xtea path for file entry %d: %w", i, err)
 			}
-			path = append(path, bytes.Trim(buf[:int(entry.PathLength)], "\xCD\x00")...)
+			name := buf[:int(entry.PathLength)]
+			if end := bytes.IndexByte(name, 0); end >= 0 {
+				name = name[:end]
+			} else {
+				for len(name) > 0 && name[len(name)-1] == 0xCD {
+					name = name[:len(name)-1]
+				}
+			}
+			path = append(path, name...)
 
 		case EntryTypeBasic:
 			if n, err = r.r.ReadAt(buf[:int(entry.PathLength)+1], foffset); err != nil {
