@@ -19,7 +19,7 @@
       in
       {
         packages = rec {
-          pangfiles = pkgs.buildGo122Module {
+          pangfiles = pkgs.buildGoModule {
             name = "pangfiles";
             src = self;
             buildInputs = deps;
@@ -36,7 +36,7 @@
             pkgs.git
             pkgs.gopls
             pkgs.gotools
-            pkgs.go_1_22
+            pkgs.go
             pkgs.gnumake
             pkgs.nixfmt-rfc-style
           ] ++ deps;
