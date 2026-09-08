@@ -3,7 +3,6 @@ package pak
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -203,7 +202,7 @@ func DetectRegions(patterns []string, keys []pyxtea.Key) ([]pyxtea.Key, error) {
 	files := []*mmap.ReaderAt{}
 	defer func() {
 		for _, file := range files {
-			file.Close()
+			_ = file.Close()
 		}
 	}()
 
@@ -343,7 +342,7 @@ func (fs *FS) Extract(dest string) error {
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(filepath.Join(dest, file.path), data, 0644)
+		err = os.WriteFile(filepath.Join(dest, file.path), data, 0644)
 		if err != nil {
 			return err
 		}
@@ -360,7 +359,7 @@ func (fs *FS) ExtractFlat(dest string) error {
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(filepath.Join(dest, flatname), data, 0644)
+		err = os.WriteFile(filepath.Join(dest, flatname), data, 0644)
 		if err != nil {
 			return err
 		}

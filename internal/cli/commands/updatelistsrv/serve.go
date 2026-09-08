@@ -32,7 +32,7 @@ func (p *cmdUpdateListServe) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.listen, "listen", ":8080", "address to listen on")
 }
 
-func (p *cmdUpdateListServe) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+func (p *cmdUpdateListServe) Execute(_ context.Context, f *flag.FlagSet, _ ...any) subcommands.ExitStatus {
 	if f.NArg() > 1 {
 		log.Println("Too many arguments.")
 		return subcommands.ExitUsageError

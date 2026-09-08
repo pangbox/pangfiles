@@ -34,7 +34,7 @@ func (p *cmdPakExtract) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.region, "region", "", "region to use (us, jp, th, eu, id, kr)")
 }
 
-func (p *cmdPakExtract) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+func (p *cmdPakExtract) Execute(_ context.Context, f *flag.FlagSet, _ ...any) subcommands.ExitStatus {
 	if f.NArg() < 1 {
 		log.Println("Not enough arguments. Specify a pak or set of paks to extract.")
 		return subcommands.ExitUsageError

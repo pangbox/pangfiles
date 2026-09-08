@@ -173,9 +173,9 @@ func (d *Decoder) decode(rv reflect.Value) error {
 }
 
 // Decode decodes an XML document to the value.
-func (d *Decoder) Decode(value interface{}) error {
+func (d *Decoder) Decode(value any) error {
 	rv := reflect.ValueOf(value)
-	if rv.Kind() != reflect.Ptr {
+	if rv.Kind() != reflect.Pointer {
 		panic("decode type must be pointer to struct")
 	}
 	return d.decode(rv.Elem())

@@ -1,4 +1,4 @@
-//nolint:unused,deadcode
+//nolint:unused
 package pak
 
 import (
@@ -16,7 +16,7 @@ type cache map[uint8]*entry
 
 func makecache() cache {
 	c := make(cache)
-	for i := 0; i < 0x100; i++ {
+	for i := range 0x100 {
 		c[uint8(i)] = &entry{}
 	}
 	return c

@@ -125,7 +125,7 @@ func (p *parser) unreadrune() {
 	p.ch = p.ch0
 }
 
-func (p *parser) badsyntax(format string, a ...interface{}) error {
+func (p *parser) badsyntax(format string, a ...any) error {
 	return syntaxerr{
 		ln:  p.ln,
 		ch:  p.ch,

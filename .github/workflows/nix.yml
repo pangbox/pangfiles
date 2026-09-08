@@ -1,4 +1,8 @@
 name: Nix
+
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ master ]
@@ -9,17 +13,19 @@ jobs:
     name: Nix Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v11
-      - uses: DeterminateSystems/magic-nix-cache-action@v6
-      - uses: DeterminateSystems/flake-checker-action@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
+      - uses: DeterminateSystems/flake-checker-action@de924abd783455e8429c858962b9e43062d19da1 # v13
         with:
           ignore-missing-flake-lock: false
           fail-mode: true
       - name: Build
         run: nix build
       - name: Check formatting
-        run: nix develop --command nixfmt --check **.nix
+        run: find . -name '*.nix' -exec nix develop --command nixfmt --check {} +
       - name: Run Dev Shell Build
         run: nix develop --command go build ./...
       - name: Run Dev Shell Tests

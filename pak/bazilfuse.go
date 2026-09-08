@@ -1,3 +1,4 @@
+//go:build !nofuse && (freebsd || linux)
 // +build !nofuse
 // +build freebsd linux
 
@@ -33,7 +34,12 @@ func (fs *FS) Mount(mountpoint string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer c.Close()
+	defer func() {
+		err := c.Close()
+		if err != nil {
+			fmt.Printf("Warning: error closing FUSE mount: %v", err)
+		}
+	}()
 
 	i := make(chan os.Signal, 1)
 	signal.Notify(i, os.Interrupt)

@@ -6,7 +6,7 @@ import (
 )
 
 // Marshal writes a liteXML struct to a liteXML document.
-func Marshal(v interface{}) ([]byte, error) {
+func Marshal(v any) ([]byte, error) {
 	buf := bytes.Buffer{}
 	err := NewEncoder(&buf).Encode(v)
 	if err != nil {
@@ -16,6 +16,6 @@ func Marshal(v interface{}) ([]byte, error) {
 }
 
 // Unmarshal parses an liteXML document into a liteXML struct.
-func Unmarshal(data []byte, v interface{}) error {
+func Unmarshal(data []byte, v any) error {
 	return NewDecoder(strings.NewReader(string(data))).Decode(v)
 }

@@ -15,7 +15,7 @@ func (versionCmd) Name() string           { return "version" }
 func (versionCmd) Synopsis() string       { return "Prints version information to stdout." }
 func (v versionCmd) Usage() string        { return fmt.Sprintf("%s:\n  %s\n", v.Name(), v.Synopsis()) }
 func (versionCmd) SetFlags(*flag.FlagSet) {}
-func (versionCmd) Execute(context.Context, *flag.FlagSet, ...interface{}) subcommands.ExitStatus {
+func (versionCmd) Execute(context.Context, *flag.FlagSet, ...any) subcommands.ExitStatus {
 	versionStr := "v" + version.Release
 	if version.GitCommit != "" {
 		versionStr += "+" + version.GitCommit

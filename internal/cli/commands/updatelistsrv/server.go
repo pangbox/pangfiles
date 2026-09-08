@@ -87,7 +87,7 @@ func (s *server) updateList(rw io.Writer) error {
 		cache, ok := s.cache[name]
 		s.mutex.RUnlock()
 
-		if ok && cache.modTime == info.ModTime() && cache.fSize == info.Size() {
+		if ok && cache.modTime.Equal(info.ModTime()) && cache.fSize == info.Size() {
 			// Cache hit
 			hit++
 			doc.UpdateFiles.Files = append(doc.UpdateFiles.Files, cache.fInfo)
@@ -126,7 +126,7 @@ func (s *server) extracontents(w io.Writer) error {
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	r.Body.Close()
+	_ = r.Body.Close()
 	log.Printf("%s %s", r.Method, r.URL)
 	if strings.Contains(strings.ToLower(r.URL.Path), "updatelist") {
 		if err := s.updateList(w); err != nil {

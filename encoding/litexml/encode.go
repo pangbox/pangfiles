@@ -45,7 +45,7 @@ func (e *Encoder) unarytag(tag, attr, value string) error {
 	return nil
 }
 
-func (e *Encoder) scalarattrval(i interface{}) (string, bool) {
+func (e *Encoder) scalarattrval(i any) (string, bool) {
 	switch t := i.(type) {
 	case int:
 		return strconv.FormatInt(int64(t), 10), true
@@ -77,7 +77,7 @@ func (e *Encoder) scalarattrval(i interface{}) (string, bool) {
 	return "", false
 }
 
-func (e *Encoder) encode(tag string, value interface{}) error {
+func (e *Encoder) encode(tag string, value any) error {
 	rt := reflect.TypeOf(value)
 	if rt.Kind() != reflect.Struct {
 		panic("encode type must be struct")
@@ -150,7 +150,7 @@ func (e *Encoder) encode(tag string, value interface{}) error {
 					continue
 				}
 			}
-			for rft.Type.Kind() == reflect.Ptr {
+			for rft.Type.Kind() == reflect.Pointer {
 				rft.Type = rft.Type.Elem()
 				rfv = rfv.Elem()
 			}
@@ -215,7 +215,7 @@ func (e *Encoder) encode(tag string, value interface{}) error {
 }
 
 // Encode encodes a value as an XML document.
-func (e *Encoder) Encode(value interface{}) error {
+func (e *Encoder) Encode(value any) error {
 	err1 := e.encode("", value)
 	err2 := e.e.w.Flush()
 	if err1 != nil {

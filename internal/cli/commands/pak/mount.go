@@ -39,7 +39,7 @@ func (p *cmdPakMount) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.open, "open", true, "when true (default) open folder upon mounting")
 }
 
-func (p *cmdPakMount) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+func (p *cmdPakMount) Execute(_ context.Context, f *flag.FlagSet, _ ...any) subcommands.ExitStatus {
 	argc := f.NArg()
 	argv := f.Args()
 

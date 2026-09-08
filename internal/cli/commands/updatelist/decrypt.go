@@ -32,7 +32,7 @@ func (p *cmdUpdateListDecrypt) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.region, "region", "us", "region to use (us, jp, th, eu, id, kr)")
 }
 
-func (p *cmdUpdateListDecrypt) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+func (p *cmdUpdateListDecrypt) Execute(_ context.Context, f *flag.FlagSet, _ ...any) subcommands.ExitStatus {
 	if f.NArg() > 2 {
 		log.Println("Too many arguments specified.")
 		return subcommands.ExitUsageError
