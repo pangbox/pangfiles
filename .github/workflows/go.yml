@@ -51,7 +51,7 @@ jobs:
         # This produces builds at:
         # - ./bin/pang-darwin-amd64
         # - ./bin/pang-darwin-arm64
-        bash ci/xgo/xgo-build.sh ghcr.io/pangbox/pangfiles/xgo:bd83ed073fc2b89295f13375583f7be6592ac8e0
+        bash ci/xgo/xgo-build.sh ghcr.io/pangbox/pangfiles/xgo@sha256:dd40b596ab7efee28ef4acc36cfd0fbdf49b48aff8c5d3f872d1824345b65364
 
         # Other platforms that do not require Cgo (because they prefer go-fuse or WinFSP over libfuse) are cross compiled natively.
         CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o bin/pang-freebsd-amd64 ./cmd/pang
