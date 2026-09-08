@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/pangbox/pangfiles/crypto/pyxtea"
 	"golang.org/x/exp/mmap"
@@ -24,10 +25,13 @@ type fsfile struct {
 	entry  FileEntryData
 	reader *Reader
 	inode  uint64
+	sizeMu sync.Mutex
 	fsize  int64
 }
 
 func (f *fsfile) size() (int64, error) {
+	f.sizeMu.Lock()
+	defer f.sizeMu.Unlock()
 	if f.fsize == -1 {
 		s, err := f.reader.CalcFileSize(f.entry)
 		if err != nil {
@@ -131,7 +135,13 @@ func (fs *FS) addfile(path string, entry FileEntryData, reader *Reader) {
 		n.fsize = -1
 	} else {
 		// Add file.
-		n := &fsfile{path, entry, reader, fs.newinode(), -1}
+		n := &fsfile{
+			path:   path,
+			entry:  entry,
+			reader: reader,
+			inode:  fs.newinode(),
+			fsize:  -1,
+		}
 		if len(fs.filetbl) > 0 {
 			i := searchfiles(fs.filetbl, path)
 			fs.filetbl = append(fs.filetbl, nil)

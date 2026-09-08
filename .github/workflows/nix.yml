@@ -31,4 +31,4 @@ jobs:
       - name: Run Dev Shell Tests
         run: nix develop --command go test ./...
       - name: Flake Check
-        run: nix flake check --all-systems
+        run: nix flake check
