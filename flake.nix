@@ -39,7 +39,8 @@
             pkgs.go
             pkgs.gnumake
             pkgs.nixfmt-rfc-style
-          ] ++ deps;
+          ]
+          ++ deps;
         };
       }
     );
