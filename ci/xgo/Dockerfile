@@ -23,7 +23,7 @@
 # --
 # https://github.com/billziss-gh/cgofuse/
 
-FROM docker.io/alpine:3.20.1
+FROM docker.io/alpine:3.24.1
 
 RUN apk add --no-cache curl 7zip
 
@@ -44,7 +44,7 @@ RUN curl -L -o winfsp.zip "https://github.com/winfsp/winfsp/archive/v${winfsp_ve
 
 RUN apk add --no-cache 7zip
 
-FROM docker.io/crazymax/xgo:1.22.1
+FROM docker.io/crazymax/xgo:1.25.9
 
 RUN dpkg --add-architecture i386 && \
     dpkg --add-architecture amd64 && \
