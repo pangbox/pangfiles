@@ -1,14 +1,14 @@
 module github.com/pangbox/pangfiles
 
-go 1.26.0
+go 1.25.0
 
 require (
 	bazil.org/fuse v0.0.0-20230120002735-62a210ff1fd5
-	github.com/billziss-gh/cgofuse v1.5.0
 	github.com/go-restruct/restruct v1.2.0-alpha
 	github.com/google/subcommands v1.2.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa
+	github.com/winfsp/cgofuse v1.6.0
+	golang.org/x/exp v0.0.0-20240409090435-93d18d7e34b8
 	golang.org/x/sys v0.47.0
 	golang.org/x/text v0.41.0
 )

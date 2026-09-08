@@ -1,3 +1,4 @@
+//go:build !nofuse && !freebsd && !linux && (windows || cgo)
 // +build !nofuse
 // +build !freebsd
 // +build !linux
@@ -10,7 +11,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/billziss-gh/cgofuse/fuse"
+	"github.com/winfsp/cgofuse/fuse"
 )
 
 // Implementation of pak fuse used on most platforms, CGo required for non-windows.
