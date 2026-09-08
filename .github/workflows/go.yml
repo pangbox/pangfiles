@@ -108,8 +108,8 @@ jobs:
         gh release create "$GITHUB_REF_NAME"
         --draft
         --generate-notes
-        pang-macos-amd64.zip
-        pang-macos-arm64.zip
+        pang-darwin-amd64.zip
+        pang-darwin-arm64.zip
         pang-freebsd-amd64.zip
         pang-linux-amd64.zip
         pang-windows-amd64.exe.zip
