@@ -1,0 +1,32 @@
+.titlebar {
+  display: flex;
+  align-items: center;
+  height: 35px;
+  flex-shrink: 0;
+  background: var(--pane);
+  border-bottom: 1px solid var(--line);
+  padding: 0 12px;
+  gap: 18px;
+  user-select: none;
+}
+
+.program-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.document-title {
+  font-size: 11px;
+  color: var(--secondary);
+  border-left: 1px solid var(--line);
+  padding-left: 17px;
+}
+
+.window-tools {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}

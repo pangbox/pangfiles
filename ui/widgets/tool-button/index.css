@@ -1,0 +1,19 @@
+.tool-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tool-button:not(:disabled):hover {
+  background: var(--button);
+  filter: brightness(1.12);
+}
+
+.tool-button:not(:disabled):active {
+  background: var(--button);
+  filter: brightness(0.92);
+}

@@ -1,0 +1,38 @@
+{
+  "name": "pangfiles",
+  "version": "1.0.0",
+  "description": "PangFiles is a set of Go libraries that implement various PangYa file formats, encryption schemes, and hashes.",
+  "homepage": "https://github.com/pangbox/pangfiles#readme",
+  "bugs": {
+    "url": "https://github.com/pangbox/pangfiles/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pangbox/pangfiles.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "format": "npx prettier -w 'ui/**/*{.tsx,.css,.html}'",
+    "format:check": "npx prettier -c 'ui/**/*{.tsx,.css,.html}'",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "oxlint": "^1.82.0",
+    "prettier": "3.9.6",
+    "typescript": "7.0.2",
+    "vite": "8.2.2"
+  },
+  "dependencies": {
+    "@heroicons/react": "2.2.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-error-boundary": "6.1.5"
+  }
+}

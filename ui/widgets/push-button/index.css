@@ -1,0 +1,29 @@
+.push-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--button);
+  border: 1px solid var(--button-border);
+  border-radius: 3px;
+  padding: 6px 12px;
+  font-size: 12px;
+  min-height: 29px;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+}
+
+.push-button:not(:disabled):hover {
+  filter: brightness(1.12);
+}
+
+.push-button:not(:disabled):active {
+  filter: brightness(0.92);
+}
+
+.push-button.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}

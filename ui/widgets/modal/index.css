@@ -1,0 +1,79 @@
+.modal {
+  width: 500px;
+  max-width: calc(100vw - 32px);
+  max-height: 90dvh;
+  background: var(--pane);
+  color: var(--text);
+  border: 1px solid var(--button-border);
+  border-radius: 5px;
+  padding: 0;
+  box-shadow: 0 12px 45px var(--shadow);
+  scrollbar-width: thin;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--raised);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.modal {
+  opacity: 0;
+  transform: perspective(800px) rotateX(15deg) scale(0.95);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    display 0.3s ease allow-discrete,
+    overlay 0.3s ease allow-discrete;
+}
+
+.modal[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@starting-style {
+  .modal[open] {
+    opacity: 0;
+    transform: perspective(800px) rotateX(-15deg) translateY(20px) scale(0.95);
+  }
+}
+
+.modal::backdrop {
+  background-color: rgba(0, 0, 0, 0);
+  transition:
+    background-color 0.3s ease,
+    display 0.3s ease allow-discrete,
+    overlay 0.3s ease allow-discrete;
+}
+
+.modal[open]::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+@starting-style {
+  .modal[open]::backdrop {
+    background-color: rgba(0, 0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,48 @@
+.topnav {
+  display: flex;
+  align-items: stretch;
+  height: 36px;
+  flex-shrink: 0;
+  background: var(--pane);
+  border-bottom: 1px solid var(--line);
+  padding: 0 8px;
+  gap: 4px;
+}
+
+.nav-tab {
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  color: var(--secondary);
+  font-size: 12px;
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+}
+
+.nav-tab.active {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.nav-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bg);
+}
+
+.nav-tab.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--accent);
+}
